@@ -65,6 +65,9 @@ export const addClient: RequestHandler = async (
         for (const memoId of memoIds) {
           const memo = await models.Memo.findByPk(memoId);
           if (memo) {
+            if (memo.clientId) {
+              return res.status(400).json({ error: `Memo with id ${memoId} is already assigned to another client` });
+            }
             await memo.update({ clientId: savedClient.id });
           } else {
             return res.status(400).json({ error: `Memo with id ${memoId} not found` });
@@ -125,6 +128,7 @@ export const getClients: RequestHandler = async (
   }
 };
 
+
 export const search: RequestHandler = async (req: any, res: any, next: any) => {
   try {
     const userID: any = req.user.id;
@@ -136,7 +140,7 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
       };
 
       if (clientName) {
-        whereClause["name"] = clientName;
+        whereClause["clientName"] = { [Op.like]: `%${clientName}%` };
       }
 
       const clients = await models.Client.findAll({
@@ -145,7 +149,7 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
           {
             model: models.Memo,
             as: "memos",
-            where: memo ? { memo: memo } : undefined,
+            where: memo ? { project: { [Op.like]: `%${memo}%` } } : undefined,
             required: false,
           },
         ],
@@ -156,7 +160,7 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
       const memos = await models.Memo.findAll({
         where: {
           userId: userID,
-          project: memo ? memo : undefined,
+          project: memo ? { [Op.like]: `%${memo}%` } : undefined,
         },
         attributes: ["project"],
       });
