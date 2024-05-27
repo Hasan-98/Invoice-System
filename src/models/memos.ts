@@ -1,11 +1,11 @@
-
-  import { DataTypes, Model, Sequelize } from "sequelize";
+import { DataTypes, Model, Sequelize } from "sequelize";
 import { IMemosAttributes } from "../interfaces/memos.interface";
 
 export default (sequelize: Sequelize) => {
   class Memo extends Model<IMemosAttributes> implements IMemosAttributes {
     id!: number;
     userId!: number;
+    clientId!: number;
     project!: string;
     amountOfMoney!: string;
     salesTax!: string;
@@ -13,12 +13,19 @@ export default (sequelize: Sequelize) => {
     updatedAt!: Date;
 
     static associate(models: any) {
-        Memo.belongsTo(models.User, {
-            foreignKey: 'userId',
-            as: 'memps',
-            onDelete: 'CASCADE', 
-            onUpdate: 'CASCADE', 
-        });
+      Memo.belongsTo(models.User, {
+        foreignKey: "userId",
+        as: "memps",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
+
+      Memo.belongsTo(models.Client, {
+        foreignKey: "clientId",
+        as: "client",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
     }
   }
 
@@ -32,6 +39,11 @@ export default (sequelize: Sequelize) => {
       userId: {
         type: DataTypes.INTEGER,
         field: "user_id",
+      },
+      clientId: {
+        type: DataTypes.INTEGER,
+        field: "client_id",
+        allowNull: true,
       },
       project: DataTypes.STRING,
       amountOfMoney: {

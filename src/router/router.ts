@@ -5,9 +5,13 @@ import multer from "multer";
 const upload = multer();
 import { register, login, userById } from "../api/UserController";
 
-import { addClient, getClients } from "../api/clientController";
-import { addCompany, getCompanies } from "../api/companyController";
-import { addMemo, getMemos } from "../api/memosController";
+import { addClient, getClients, search } from "../api/clientController";
+import {
+  addCompany,
+  getCompanies,
+  updateCompany,
+} from "../api/companyController";
+import { addMemo, getMemos, updateMemo } from "../api/memosController";
 import {
   addEmailTemplate,
   getEmailTemplates,
@@ -15,6 +19,7 @@ import {
 import {
   addBankingDetail,
   getBankingDetails,
+  updateBankingDetail,
 } from "../api/bankingDetailController";
 import passport from "../auth/passport";
 const router: Router = express.Router();
@@ -40,6 +45,11 @@ router.get(
   getClients
 );
 
+router.get(
+  "/search",
+  passport.authenticate("jwt", { session: false }),
+  search
+);
 router.post(
   "/add-memo",
   passport.authenticate("jwt", { session: false }),
@@ -52,6 +62,11 @@ router.get(
   getMemos
 );
 
+router.put(
+  "/update-memo/:id",
+  passport.authenticate("jwt", { session: false }),
+  updateMemo
+);
 router.post(
   "/add-company",
   passport.authenticate("jwt", { session: false }),
@@ -62,6 +77,12 @@ router.get(
   "/get-all-companies",
   passport.authenticate("jwt", { session: false }),
   getCompanies
+);
+
+router.put(
+  "/update-company/:id",
+  passport.authenticate("jwt", { session: false }),
+  updateCompany
 );
 
 router.post(
@@ -76,6 +97,11 @@ router.get(
   getBankingDetails
 );
 
+router.put(
+  "/update-banking-detail/:id",
+  passport.authenticate("jwt", { session: false }),
+  updateBankingDetail
+);
 router.post(
   "/add-email-template",
   passport.authenticate("jwt", { session: false }),

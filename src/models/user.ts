@@ -36,7 +36,7 @@ export default (sequelize: Sequelize) => {
         onUpdate: "CASCADE",
       });
 
-      User.hasMany(models.Memos, {
+      User.hasMany(models.Memo, {
         foreignKey: "userId",
         as: "memos",
         onDelete: "CASCADE",

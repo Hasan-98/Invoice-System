@@ -17,9 +17,10 @@ export const addMemo: RequestHandler = async (
       project,
       amountOfMoney,
       salesTax,
+      clientId: null,
     };
 
-    const savedMemo = await models.Memos.create(newMemo);
+    const savedMemo = await models.Memo.create(newMemo);
     if (savedMemo) {
       res.status(201).json({ message: "Memo added successfully" });
     }
@@ -28,7 +29,6 @@ export const addMemo: RequestHandler = async (
   }
 };
 
-// need api to get all memos by the user
 export const getMemos: RequestHandler = async (
   req: any,
   res: any,
@@ -36,7 +36,7 @@ export const getMemos: RequestHandler = async (
 ) => {
   try {
     let userID: any = req.user.id;
-    const memos = await models.Memos.findAll({
+    const memos = await models.Memo.findAll({
       where: {
         userId: userID,
       },
@@ -46,8 +46,47 @@ export const getMemos: RequestHandler = async (
     res.status(500).json({ message: "Internal server error" });
   }
 };
+export const updateMemo: RequestHandler = async (
+  req: any,
+  res: any,
+  next: any
+) => {
+  try {
+    const { project, amountOfMoney, salesTax } = req.body;
+    let userID: any = req.user.id;
+    const memoId = req.params.id;
 
+    const updatedMemo = {
+      project,
+      amountOfMoney,
+      salesTax,
+    };
+
+    const memo = await models.Memo.findOne({
+      where: {
+        id: memoId,
+        userId: userID,
+      },
+    });
+
+    if (!memo) {
+      return res.status(404).json({ message: "Memo not found" });
+    }
+
+    await models.Memo.update(updatedMemo, {
+      where: {
+        id: memoId,
+        userId: userID,
+      },
+    });
+
+    res.status(200).json({ message: "Memo updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 export default {
   addMemo,
   getMemos,
+  updateMemo,
 };

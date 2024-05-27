@@ -25,6 +25,7 @@ export const addClient: RequestHandler = async (
       emailAddress,
       notes,
     } = req.body;
+    let memoIds = req.body.memoIds;
     let userID: any = req.user.id;
     const userFolder = `client-${emailAddress}`;
     const file = req.file;
@@ -57,6 +58,21 @@ export const addClient: RequestHandler = async (
     };
 
     const savedClient = await models.Client.create(newClient);
+
+    if (memoIds) {
+      memoIds = JSON.parse(memoIds);
+      if (Array.isArray(memoIds)) {
+        for (const memoId of memoIds) {
+          const memo = await models.Memo.findByPk(memoId);
+          if (memo) {
+            await memo.update({ clientId: savedClient.id });
+          } else {
+            return res.status(400).json({ error: `Memo with id ${memoId} not found` });
+          }
+        }
+      }
+    }
+
     if (savedClient) {
       return res.status(200).json({ message: "Client added successfully" });
     } else {
@@ -70,6 +86,7 @@ export const addClient: RequestHandler = async (
   }
 };
 
+
 export const getClients: RequestHandler = async (
   req: any,
   res: any,
@@ -77,11 +94,28 @@ export const getClients: RequestHandler = async (
 ) => {
   try {
     const userID: any = req.user.id;
+    const { clientName, memo } = req.query;
+
+    const whereClause: { [key: string]: any } = {
+      userId: userID,
+    };
+
+    if (clientName) {
+      whereClause["clientName"] = { [Op.like]: `%${clientName}%` };
+    }
+
     const clients = await models.Client.findAll({
-      where: {
-        userId: userID,
-      },
+      where: whereClause,
+      include: [
+        {
+          model: models.Memo,
+          as: "memos",
+          where: memo ? { project: { [Op.like]: `%${memo}%` } } : undefined,
+          required: false,
+        },
+      ],
     });
+
     return res.status(200).json(clients);
   } catch (error) {
     console.error("Error:", error);
@@ -91,7 +125,55 @@ export const getClients: RequestHandler = async (
   }
 };
 
+export const search: RequestHandler = async (req: any, res: any, next: any) => {
+  try {
+    const userID: any = req.user.id;
+    const { searchType, clientName, memo } = req.query;
+
+    if (searchType === "client") {
+      const whereClause: { [key: string]: any } = {
+        userId: userID,
+      };
+
+      if (clientName) {
+        whereClause["name"] = clientName;
+      }
+
+      const clients = await models.Client.findAll({
+        where: whereClause,
+        include: [
+          {
+            model: models.Memo,
+            as: "memos",
+            where: memo ? { memo: memo } : undefined,
+            required: false,
+          },
+        ],
+      });
+
+      return res.status(200).json(clients);
+    } else if (searchType === "memo") {
+      const memos = await models.Memo.findAll({
+        where: {
+          userId: userID,
+          project: memo ? memo : undefined,
+        },
+        attributes: ["project"],
+      });
+
+      return res.status(200).json(memos);
+    } else {
+      return res.status(400).json({ error: "Invalid search type" });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return res
+      .status(500)
+      .json({ error: "Cannot perform search at the moment" });
+  }
+};
 export default {
   addClient,
   getClients,
+  search,
 };

@@ -16,12 +16,19 @@ export default (sequelize: Sequelize) => {
     updatedAt!: Date;
 
     static associate(models: any) {
-        Client.belongsTo(models.User, {
-            foreignKey: 'userId',
-            as: 'user',
-            onDelete: 'CASCADE', 
-            onUpdate: 'CASCADE', 
-          });
+      Client.belongsTo(models.User, {
+        foreignKey: "userId",
+        as: "user",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
+
+      Client.hasMany(models.Memo, {
+        foreignKey: "clientId",
+        as: "memos",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
     }
   }
 
@@ -32,10 +39,10 @@ export default (sequelize: Sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-        userId: {
-            type: DataTypes.INTEGER,
-            field: "user_id",
-        },
+      userId: {
+        type: DataTypes.INTEGER,
+        field: "user_id",
+      },
       clientName: {
         type: DataTypes.STRING,
         field: "client_name",

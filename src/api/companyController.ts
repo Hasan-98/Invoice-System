@@ -44,7 +44,51 @@ export const getCompanies: RequestHandler = async (
   }
 };
 
+// update company details 
+export const updateCompany: RequestHandler = async (
+  req: any,
+  res: any,
+  next: any
+) => {
+  try {
+    const { companyName, address, emailAddress } = req.body;
+    let userID: any = req.user.id;
+    const companyId = req.params.id;
+
+    const updatedCompany = {
+      companyName,
+      address,
+      emailAddress,
+    };
+
+    const company = await models.Company.findOne({
+      where: {
+        userId: userID,
+        id: companyId,
+      },
+    });
+
+    if (!company) {
+      return res.status(404).json({ message: "Company not found" });
+    }
+
+    const updated = await models.Company.update(updatedCompany, {
+      where: {
+        userId: userID,
+        id: companyId,
+      },
+    });
+
+    if (updated) {
+      res.status(200).json({ message: "Company updated successfully" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 export default {
   addCompany,
   getCompanies,
+  updateCompany,
 };

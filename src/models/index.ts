@@ -34,7 +34,7 @@ const models = {
   EmailTemplate: emailTemplate(sequelize),
   BankingDetails: bankingDetails(sequelize),
   Company: company(sequelize),
-  Memos: Memos(sequelize),
+  Memo: Memos(sequelize),
 };
 
 
