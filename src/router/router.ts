@@ -5,7 +5,12 @@ import multer from "multer";
 const upload = multer();
 import { register, login, userById } from "../api/UserController";
 
-import { addClient, getClients, search } from "../api/clientController";
+import {
+  addClient,
+  updateClient,
+  getClients,
+  search,
+} from "../api/clientController";
 import {
   addCompany,
   getCompanies,
@@ -39,17 +44,19 @@ router.post(
   addClient
 );
 
+router.put(
+  "/update-client/:id",
+  passport.authenticate("jwt", { session: false }),
+  upload.single("image"),
+  updateClient
+);
 router.get(
   "/get-all-clients",
   passport.authenticate("jwt", { session: false }),
   getClients
 );
 
-router.get(
-  "/search",
-  passport.authenticate("jwt", { session: false }),
-  search
-);
+router.get("/search", passport.authenticate("jwt", { session: false }), search);
 router.post(
   "/add-memo",
   passport.authenticate("jwt", { session: false }),

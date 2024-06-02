@@ -89,7 +89,82 @@ export const addClient: RequestHandler = async (
   }
 };
 
+export const updateClient: RequestHandler = async (req: any, res: any, next: any) => {
+  try {
+    const {
+      clientName,
+      companyName,
+      personInCharge,
+      address,
+      emailAddress,
+      notes
+    } = req.body;
+    let memoIds = req.body;
+    const clientId = req.params.id;
+    const file = req.file;
+    const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
+    if (!BUCKET_NAME) {
+      throw new Error("AWS_BUCKET_NAME is not defined");
+    }
+
+    let updateData: any = {
+      clientName,
+      companyName,
+      personInCharge,
+      address,
+      emailAddress,
+      notes,
+    };
+
+    if (file) {
+      const userFolder = `client-${emailAddress}`;
+      const type = file.mimetype?.split("/")[1];
+      const name = `${userFolder}/${Date.now()}.${type}`;
+      const params = {
+        Bucket: BUCKET_NAME,
+        Key: name,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+
+      const { Location } = await s3.upload(params).promise();
+      updateData.uploadImage = Location;
+    }
+
+    const updatedClient = await models.Client.update(updateData, {
+      where: { id: clientId },
+    });
+
+    if (memoIds) {
+      memoIds = JSON.parse(memoIds);
+      if (Array.isArray(memoIds)) {
+        for (const memoId of memoIds) {
+          const memo = await models.Memo.findByPk(memoId);
+          if (memo) {
+            if (memo.clientId && memo.clientId !== clientId) {
+              return res.status(400).json({ error: `Memo with id ${memoId} is already assigned to another client` });
+            }
+            await memo.update({ clientId: clientId });
+          } else {
+            return res.status(400).json({ error: `Memo with id ${memoId} not found` });
+          }
+        }
+      }
+    }
+
+    if (updatedClient) {
+      return res.status(200).json({ message: "Client updated successfully" });
+    } else {
+      return res
+        .status(500)
+        .json({ error: "Cannot update client at the moment!" });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ error: "Cannot update client at the moment" });
+  }
+};
 export const getClients: RequestHandler = async (
   req: any,
   res: any,
@@ -178,6 +253,7 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
 };
 export default {
   addClient,
+  updateClient,
   getClients,
   search,
 };
