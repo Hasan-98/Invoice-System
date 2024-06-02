@@ -66,11 +66,15 @@ export const addClient: RequestHandler = async (
           const memo = await models.Memo.findByPk(memoId);
           if (memo) {
             if (memo.clientId) {
-              return res.status(400).json({ error: `Memo with id ${memoId} is already assigned to another client` });
+              return res.status(400).json({
+                error: `Memo with id ${memoId} is already assigned to another client`,
+              });
             }
             await memo.update({ clientId: savedClient.id });
           } else {
-            return res.status(400).json({ error: `Memo with id ${memoId} not found` });
+            return res
+              .status(400)
+              .json({ error: `Memo with id ${memoId} not found` });
           }
         }
       }
@@ -89,7 +93,11 @@ export const addClient: RequestHandler = async (
   }
 };
 
-export const updateClient: RequestHandler = async (req: any, res: any, next: any) => {
+export const updateClient: RequestHandler = async (
+  req: any,
+  res: any,
+  next: any
+) => {
   try {
     const {
       clientName,
@@ -97,11 +105,11 @@ export const updateClient: RequestHandler = async (req: any, res: any, next: any
       personInCharge,
       address,
       emailAddress,
-      notes
+      notes,
     } = req.body;
-    let memoIds = req.body;
-    const clientId = req.params.id;
+    let memoIds = req.body.memoIds;
     const file = req.file;
+    const clientId = req.params.id;
     const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
     if (!BUCKET_NAME) {
@@ -142,12 +150,22 @@ export const updateClient: RequestHandler = async (req: any, res: any, next: any
         for (const memoId of memoIds) {
           const memo = await models.Memo.findByPk(memoId);
           if (memo) {
+            const client = await models.Client.findByPk(clientId);
+            if (!client) {
+              return res
+                .status(400)
+                .json({ error: `Client with id ${clientId} not found` });
+            }
             if (memo.clientId && memo.clientId !== clientId) {
-              return res.status(400).json({ error: `Memo with id ${memoId} is already assigned to another client` });
+              return res.status(400).json({
+                error: `Memo with id ${memoId} is already assigned to another client`,
+              });
             }
             await memo.update({ clientId: clientId });
           } else {
-            return res.status(400).json({ error: `Memo with id ${memoId} not found` });
+            return res
+              .status(400)
+              .json({ error: `Memo with id ${memoId} not found` });
           }
         }
       }
@@ -162,7 +180,9 @@ export const updateClient: RequestHandler = async (req: any, res: any, next: any
     }
   } catch (error) {
     console.error("Error:", error);
-    return res.status(500).json({ error: "Cannot update client at the moment" });
+    return res
+      .status(500)
+      .json({ error: "Cannot update client at the moment" });
   }
 };
 export const getClients: RequestHandler = async (
@@ -202,7 +222,6 @@ export const getClients: RequestHandler = async (
       .json({ error: "Cannot fetch clients at the moment" });
   }
 };
-
 
 export const search: RequestHandler = async (req: any, res: any, next: any) => {
   try {
