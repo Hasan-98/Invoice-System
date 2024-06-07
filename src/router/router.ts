@@ -16,7 +16,12 @@ import {
   getCompanies,
   updateCompany,
 } from "../api/companyController";
-import { addMemo, getMemos, updateMemo } from "../api/memosController";
+import {
+  addMemo,
+  getMemos,
+  updateMemo,
+  deleteMemo,
+} from "../api/memosController";
 import {
   addEmailTemplate,
   getEmailTemplates,
@@ -63,6 +68,11 @@ router.post(
   addMemo
 );
 
+router.delete(
+  "/delete-memo/:id",
+  passport.authenticate("jwt", { session: false }),
+  deleteMemo
+);
 router.get(
   "/get-all-memos",
   passport.authenticate("jwt", { session: false }),

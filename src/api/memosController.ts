@@ -85,8 +85,42 @@ export const updateMemo: RequestHandler = async (
     res.status(500).json({ message: "Internal server error" });
   }
 }
+// delete memo
+export const deleteMemo: RequestHandler = async (
+  req: any,
+  res: any,
+  next: any
+) => {
+  try {
+    let userID: any = req.user.id;
+    const memoId = req.params.id;
+
+    const memo = await models.Memo.findOne({
+      where: {
+        id: memoId,
+        userId: userID,
+      },
+    });
+
+    if (!memo) {
+      return res.status(404).json({ message: "Memo not found" });
+    }
+
+    await models.Memo.destroy({
+      where: {
+        id: memoId,
+        userId: userID,
+      },
+    });
+
+    res.status(200).json({ message: "Memo deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 export default {
   addMemo,
   getMemos,
   updateMemo,
+  deleteMemo,
 };
