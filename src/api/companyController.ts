@@ -10,6 +10,10 @@ export const addCompany: RequestHandler = async (
     const { companyName, address, emailAddress } = req.body;
     let userID: any = req.user.id;
 
+    const existingCompany = await models.Company.findOne({ where: { userId: userID } });
+    if (existingCompany) {
+      return res.status(400).json({ message: "User already has a company" });
+    }
     const newCompany = {
       userId: userID,
       companyName,

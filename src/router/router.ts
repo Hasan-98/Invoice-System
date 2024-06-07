@@ -20,7 +20,9 @@ import {
   addMemo,
   getMemos,
   updateMemo,
+  getMemoById,
   deleteMemo,
+  assignMemosToClient,
 } from "../api/memosController";
 import {
   addEmailTemplate,
@@ -67,6 +69,11 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   addMemo
 );
+router.get(
+  "/get-memo/:id",
+  passport.authenticate("jwt", { session: false }),
+  getMemoById
+);
 
 router.delete(
   "/delete-memo/:id",
@@ -79,6 +86,11 @@ router.get(
   getMemos
 );
 
+router.put(
+  "/assign-memos-to-client/:id",
+  passport.authenticate("jwt", { session: false }),
+  assignMemosToClient
+);
 router.put(
   "/update-memo/:id",
   passport.authenticate("jwt", { session: false }),
