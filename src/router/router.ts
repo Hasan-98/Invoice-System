@@ -9,6 +9,7 @@ import {
   addClient,
   updateClient,
   getClients,
+  getClientById,
   search,
 } from "../api/clientController";
 import {
@@ -49,6 +50,11 @@ router.post(
   passport.authenticate("jwt", { session: false }),
   upload.single("image"),
   addClient
+);
+router.get(
+  "/get-client/:id",
+  passport.authenticate("jwt", { session: false }),
+  getClientById
 );
 
 router.put(

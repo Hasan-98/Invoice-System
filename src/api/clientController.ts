@@ -270,9 +270,43 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
       .json({ error: "Cannot perform search at the moment" });
   }
 };
+//get client by id and show all memos assigned to that client
+export const getClientById: RequestHandler = async (
+  req: any,
+  res: any,
+  next: any
+) => {
+  try {
+    const userID: any = req.user.id;
+    const clientId = req.params.id;
+
+    const client = await models.Client.findOne({
+      where: {
+        userId: userID,
+        id: clientId,
+      },
+      include: [
+        {
+          model: models.Memo,
+          as: "memos",
+        },
+      ],
+    });
+
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+
+    return res.status(200).json(client);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
 export default {
   addClient,
   updateClient,
   getClients,
+  getClientById,
   search,
 };
