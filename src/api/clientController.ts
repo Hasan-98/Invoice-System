@@ -232,34 +232,34 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
       const whereClause: { [key: string]: any } = {
         userId: userID,
       };
-
       if (clientName) {
         whereClause["clientName"] = { [Op.like]: `%${clientName}%` };
       }
 
       const clients = await models.Client.findAll({
         where: whereClause,
-        include: [
-          {
-            model: models.Memo,
-            as: "memos",
-            where: memo ? { project: { [Op.like]: `%${memo}%` } } : undefined,
-            required: false,
-          },
-        ],
+        attributes: ["clientName"],
       });
 
-      return res.status(200).json(clients);
+      const clientNames = clients.map((client) => client.clientName);
+
+      return res.status(200).json(clientNames);
     } else if (searchType === "memo") {
+      const whereClause: { [key: string]: any } = {
+        userId: userID,
+      };
+      if (memo) {
+        whereClause["project"] = { [Op.like]: `%${memo}%` };
+      }
+
       const memos = await models.Memo.findAll({
-        where: {
-          userId: userID,
-          project: memo ? { [Op.like]: `%${memo}%` } : undefined,
-        },
+        where: whereClause,
         attributes: ["project"],
       });
 
-      return res.status(200).json(memos);
+      const projectNames = [...new Set(memos.map(memo => memo.project))];
+
+      return res.status(200).json(projectNames);
     } else {
       return res.status(400).json({ error: "Invalid search type" });
     }
@@ -270,7 +270,6 @@ export const search: RequestHandler = async (req: any, res: any, next: any) => {
       .json({ error: "Cannot perform search at the moment" });
   }
 };
-//get client by id and show all memos assigned to that client
 export const getClientById: RequestHandler = async (
   req: any,
   res: any,
@@ -302,7 +301,7 @@ export const getClientById: RequestHandler = async (
     console.error("Error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 export default {
   addClient,
   updateClient,
