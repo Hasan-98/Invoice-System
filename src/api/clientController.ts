@@ -191,12 +191,9 @@ export const getClients: RequestHandler = async (
   next: any
 ) => {
   try {
-    const userID: any = req.user.id;
     const { clientName, memo } = req.query;
 
-    const whereClause: { [key: string]: any } = {
-      userId: userID,
-    };
+    const whereClause: { [key: string]: any } = {};
 
     if (clientName) {
       whereClause["clientName"] = { [Op.like]: `%${clientName}%` };
